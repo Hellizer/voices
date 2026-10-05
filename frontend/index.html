@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>голоса</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="scene"></div>
+  <aside id="voices"></aside>
+  <aside id="traces"></aside>
+  <button id="help-btn" type="button" aria-label="что это">?</button>
+  <footer id="journal"></footer>
+  <div id="intervene-bar">
+    <button data-type="request">попросить</button>
+    <button data-type="forbid">запретить</button>
+    <button data-type="support">поддержать</button>
+    <button data-type="distract">отвлечь</button>
+    <button data-type="insist">настоять</button>
+    <button data-type="leave">уйти</button>
+  </div>
+  <div id="modal" hidden>
+    <div class="modal-body">
+      <h2 id="modal-title"></h2>
+      <label>цель <select id="modal-target"></select></label>
+      <label>сила <input id="modal-intensity" type="range" min="0" max="1" step="0.05" value="0.2"></label>
+      <div class="modal-actions">
+        <button id="modal-cancel">отмена</button>
+        <button id="modal-ok">отправить</button>
+      </div>
+      <p id="modal-response"></p>
+    </div>
+  </div>
+  <div id="help" hidden>
+    <div class="help-body">
+      <button id="help-close" type="button" aria-label="закрыть">×</button>
+      <h2>что это</h2>
+      <p>локальный спутник одного персонажа. не игра в привычном смысле. не тамагочи. персонаж живёт сам, в фоновом процессе, независимо от того, открыт браузер или нет.</p>
+      <p>один такт — один игровой час. по умолчанию десять реальных минут.</p>
+      <h3>слева — голоса</h3>
+      <p>шесть внутренних голосов: тело, безопасность, связь, признание, интерес, контроль. это не полоски прогресса. это конкурирующие желания. полоса показывает, насколько голос сейчас громкий. они растут, гаснут, тянут друг друга.</p>
+      <h3>центр — сцена</h3>
+      <p>что персонаж делает прямо сейчас, где он. одна фраза. этого достаточно.</p>
+      <h3>справа — следы</h3>
+      <p>то, что осталось от действий: привычки, пороги, проекты, шрамы, ритуалы, долги, привязанности, самоназвания, упущенные окна. следы важнее действий — они меняют персонажа надолго.</p>
+      <h3>снизу — журнал</h3>
+      <p>хронология по тактам: что произошло, что решилось, где случился кризис.</p>
+      <h3>кнопки внизу — каналы влияния</h3>
+      <p>попросить, запретить, поддержать, отвлечь, настоять, уйти. это не команды. это сдвиг весов. он может услышать, может проигнорировать, может ответить не то. со временем он привыкает к тебе — или нет.</p>
+      <p>состояние сохраняется на диск. если ты пропадёшь на неделю, персонаж продолжит жить — чуть более одинокий, чем был.</p>
+    </div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+tick:
+  real_minutes_per_game_hour: 10
+  autostart: true
+
+simulation:
+  temperature: 0.4
+  habit_threshold: 5
+  threshold_window: 20
+  crisis_threshold: 0.75
+
+storage:
+  db_path: ./state.db
+  backup_dir: ./backups
+
+player:
+  default_intensity: 0.2
+  track_presence: true
+
+world:
+  locations: 5
+  npcs: 4
+  opportunity_windows_per_day: 3
