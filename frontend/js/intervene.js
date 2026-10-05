@@ -109,6 +109,8 @@ export function openModal(type) {
   fillTargets();
   if (intensity) intensity.value = "0.2";
   if (response) response.textContent = "";
+  const ok = document.getElementById("modal-ok");
+  if (ok) ok.disabled = false;
   modal.hidden = false;
 }
 
@@ -136,11 +138,18 @@ async function sendIntervention() {
     });
     const data = await res.json();
     if (response) response.textContent = data.message || "";
+    const ok = document.getElementById("modal-ok");
+    if (ok) ok.disabled = true;
   } catch (_) {
-    if (response) response.textContent = "";
+    if (response) response.textContent = "не получилось";
   }
 
-  setTimeout(closeModal, 1500);
+  setTimeout(() => {
+    const modal = document.getElementById("modal");
+    if (modal && !modal.hidden) {
+      closeModal();
+    }
+  }, 2000);
 }
 
 export function initIntervene() {

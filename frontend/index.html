@@ -51,6 +51,18 @@
       <p>состояние сохраняется на диск. если ты пропадёшь на неделю, персонаж продолжит жить — чуть более одинокий, чем был.</p>
     </div>
   </div>
+  <div id="init" hidden>
+    <div class="init-body">
+      <h2>как её зовут</h2>
+      <label>имя <input id="init-name" type="text" maxlength="40" autocomplete="off"></label>
+      <div class="init-gender">
+        <button type="button" id="init-female" class="active">женский</button>
+        <button type="button" id="init-male">мужской</button>
+      </div>
+      <button type="button" id="init-ok">начать</button>
+      <p id="init-error"></p>
+    </div>
+  </div>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

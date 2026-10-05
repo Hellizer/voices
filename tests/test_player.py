@@ -33,6 +33,8 @@ def test_apply_intervention_logs_and_history():
     intervention = Intervention(type="request", target="body", intensity=0.3)
     result = apply_intervention(p, voices, traces, journal, intervention, tick=5)
     assert "obeyed" in result
+    assert "message_key" in result
+    assert result["message_key"] in ("heard", "ignored", "wrong")
     assert len(p.obedience_history) == 1
     assert len(p.interventions) == 1
     assert p.last_seen_tick == 5

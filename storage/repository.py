@@ -285,8 +285,12 @@ def save_player_input(conn: sqlite3.Connection, kind: str, payload: dict, effect
 def character_to_dict(character: Character) -> dict:
     return {
         "id": character.id,
+        "name": character.name,
+        "gender": character.gender,
+        "self_name": character.self_name,
         "tick": character.tick,
         "temperature": character.temperature,
+        "choice_delta": character.choice_delta,
         "location": character.location,
         "resources": dict(character.resources),
         "cooldowns": dict(character.cooldowns),
@@ -316,8 +320,12 @@ def dict_to_character(data: dict) -> Character:
     character = create_character(
         data.get("id", "default"),
         data.get("temperature", 0.4),
+        data.get("choice_delta", 0.08),
     )
     character.tick = data.get("tick", 0)
+    character.name = data.get("name", "")
+    character.gender = data.get("gender", "female")
+    character.self_name = data.get("self_name", "")
     character.location = data.get("location", "home")
     character.resources = dict(data.get("resources", character.resources))
     character.cooldowns = dict(data.get("cooldowns", {}))

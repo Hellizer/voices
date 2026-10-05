@@ -23,6 +23,66 @@ function initHelp() {
       overlay.hidden = true;
     }
   });
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape" && !overlay.hidden) {
+      overlay.hidden = true;
+    }
+  });
+}
+
+function openInitOverlay() {
+  const overlay = document.getElementById("init");
+  const nameInput = document.getElementById("init-name");
+  const femaleBtn = document.getElementById("init-female");
+  const maleBtn = document.getElementById("init-male");
+  const okBtn = document.getElementById("init-ok");
+  const errEl = document.getElementById("init-error");
+  if (!overlay || !nameInput || !okBtn) return;
+
+  let gender = "female";
+  femaleBtn.classList.add("active");
+  maleBtn.classList.remove("active");
+
+  femaleBtn.addEventListener("click", () => {
+    gender = "female";
+    femaleBtn.classList.add("active");
+    maleBtn.classList.remove("active");
+  });
+  maleBtn.addEventListener("click", () => {
+    gender = "male";
+    maleBtn.classList.add("active");
+    femaleBtn.classList.remove("active");
+  });
+
+  okBtn.addEventListener("click", async () => {
+    const name = nameInput.value.trim();
+    if (!name) {
+      if (errEl) errEl.textContent = "нужно имя";
+      return;
+    }
+    if (errEl) errEl.textContent = "";
+    try {
+      const res = await fetch("/character/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, gender }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        store.name = data.name;
+        store.gender = data.gender;
+        overlay.hidden = true;
+        render();
+      } else if (errEl) {
+        errEl.textContent = "не получилось";
+      }
+    } catch (_) {
+      if (errEl) errEl.textContent = "не получилось";
+    }
+  });
+
+  overlay.hidden = false;
+  nameInput.focus();
 }
 
 async function loadInitial() {
@@ -31,6 +91,9 @@ async function loadInitial() {
     const data = await res.json();
     setState(data);
     render();
+    if (!store.name) {
+      openInitOverlay();
+    }
   } catch (_) {
   }
 }
@@ -88,11 +151,13 @@ function connectWs() {
           tick: payload.tick,
           kind: 'intervention',
           payload: {
-            type: payload.type,
+            type: payload.intervention_type,
             target: payload.target,
             target_voice: payload.target_voice,
             delta: payload.delta,
             obeyed: payload.obeyed,
+            message: payload.message,
+            message_key: payload.message_key,
           },
         },
       ]);

@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from sim.character import Character, build_state, sync_from_state
+from sim.character import Character, build_state, sync_from_state, derive_self_name
 from sim.voices import step, normalize, clamp
 from sim.actions import choose_action, apply_action
 from sim.traces import decay_all, register_missed_window
@@ -209,6 +209,9 @@ def simulation_tick(character: Character, world: World, player_present: bool = F
     if crisis is not None:
         crisis_mutation = apply_crisis(character.voices, character.traces, crisis)
         mutations.append(crisis_mutation)
+        chosen = crisis_mutation.payload.get("chosen")
+        if chosen:
+            character.self_name = derive_self_name(character.gender, chosen)
         log(
             character.journal,
             character.tick,
@@ -216,7 +219,7 @@ def simulation_tick(character: Character, world: World, player_present: bool = F
             {
                 "voices": list(crisis.voices),
                 "severity": crisis.severity,
-                "chosen": crisis_mutation.payload.get("chosen"),
+                "chosen": chosen,
             },
         )
 

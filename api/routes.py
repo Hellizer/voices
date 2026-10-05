@@ -18,6 +18,11 @@ class EnvironmentBody(BaseModel):
     payload: dict = {}
 
 
+class CharacterInitBody(BaseModel):
+    name: str
+    gender: str
+
+
 @router.get("/state")
 async def get_state(request: Request):
     runtime = request.app.state.runtime
@@ -28,6 +33,17 @@ async def get_state(request: Request):
 async def get_events(request: Request, since: int = 0):
     runtime = request.app.state.runtime
     return {"events": runtime.events_since(since)}
+
+
+@router.post("/character/init")
+async def post_character_init(request: Request, body: CharacterInitBody):
+    if body.gender not in ("male", "female"):
+        raise HTTPException(status_code=400, detail="gender must be male or female")
+    if not body.name.strip():
+        raise HTTPException(status_code=400, detail="name required")
+    runtime = request.app.state.runtime
+    result = await runtime.character_init(body.name, body.gender)
+    return result
 
 
 @router.post("/intervene")

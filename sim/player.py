@@ -145,6 +145,13 @@ def apply_intervention(
             if "safety" in voices:
                 voices["safety"].weight = clamp(voices["safety"].weight - delta * 0.5)
 
+    if obeyed:
+        message_key = "heard"
+    elif intervention.intensity > 0.5:
+        message_key = "wrong"
+    else:
+        message_key = "ignored"
+
     log(
         journal,
         tick,
@@ -155,6 +162,7 @@ def apply_intervention(
             "target_voice": target_voice,
             "delta": delta,
             "obeyed": obeyed,
+            "message_key": message_key,
         },
     )
 
@@ -172,18 +180,11 @@ def apply_intervention(
         player.obedience_history.pop(0)
     player.last_seen_tick = tick
 
-    if obeyed:
-        message = "он услышал"
-    elif intervention.intensity > 0.5:
-        message = "он ответил не то, что ты просил"
-    else:
-        message = "он проигнорировал"
-
     return {
         "obeyed": obeyed,
         "delta": delta,
         "target_voice": target_voice,
-        "message": message,
+        "message_key": message_key,
     }
 
 

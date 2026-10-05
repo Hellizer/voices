@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Tuple
 
@@ -33,6 +34,7 @@ LINKS = {
 MEMORY_ALPHA = 0.2
 LINK_RATE = 0.01
 DECAY_RATE = 0.02
+RESISTANCE_SHARPNESS = 6.0
 
 
 @dataclass
@@ -51,6 +53,22 @@ def clamp(value: float, lo: float = 0.0, hi: float = 1.0) -> float:
     if value > hi:
         return hi
     return value
+
+
+def _sigmoid(x: float) -> float:
+    if x >= 0:
+        z = math.exp(-x)
+        return 1.0 / (1.0 + z)
+    z = math.exp(x)
+    return z / (1.0 + z)
+
+
+def weight_resistance(w: float) -> float:
+    distance = abs(w - 0.5)
+    if distance <= 0.3:
+        return 1.0
+    extra = (distance - 0.3) / 0.5
+    return 1.0 - 0.6 * extra
 
 
 def create_voices() -> Dict[str, Voice]:
@@ -77,7 +95,8 @@ def update_memory(voice: Voice, alpha: float = MEMORY_ALPHA) -> None:
 
 
 def apply_delta(voice: Voice, delta: float) -> None:
-    voice.weight = clamp(voice.weight + delta * voice.sensitivity)
+    r = weight_resistance(voice.weight)
+    voice.weight = clamp(voice.weight + delta * voice.sensitivity * r)
 
 
 def normalize(voices: Dict[str, Voice]) -> None:
@@ -97,8 +116,9 @@ def apply_links(voices: Dict[str, Voice]) -> None:
                 continue
             if dst_name not in voices:
                 continue
+            dst = voices[dst_name]
             delta = src.weight * coeff * LINK_RATE
-            voices[dst_name].weight = clamp(voices[dst_name].weight + delta)
+            dst.weight = clamp(dst.weight + delta)
 
 
 def step(voices: Dict[str, Voice]) -> None:

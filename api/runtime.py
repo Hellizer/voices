@@ -2,6 +2,7 @@
 import asyncio
 import datetime
 import json
+import random
 import sqlite3
 from pathlib import Path
 from typing import Callable, Awaitable, Optional, Any
@@ -67,7 +68,14 @@ class Runtime:
             "world": raw.get("world", {}) or {},
         }
 
+        seed = self.cfg["simulation"].get("seed")
+        if seed is not None:
+            random.seed(int(seed))
+
         self.base_dir = Path(self.config_path).resolve().parent
+
+        self.temperature = float(self.cfg["simulation"].get("temperature", 0.4))
+        self.choice_delta = float(self.cfg["simulation"].get("choice_delta", 0.08))
 
         storage_cfg = self.cfg["storage"]
         db_path = storage_cfg.get("db_path", "./state.db")
@@ -91,7 +99,6 @@ class Runtime:
 
         if not self._try_load_from_db():
             if not self._restore_from_backup():
-                # ни БД, ни бэкапа — начинаем с чистого листа
                 try:
                     if Path(self.db_path).exists():
                         Path(self.db_path).unlink()
@@ -99,7 +106,7 @@ class Runtime:
                     pass
                 self.conn = init_db(self.db_path)
                 self.character = create_character(
-                    "default", float(self.cfg["simulation"].get("temperature", 0.4))
+                    "default", self.temperature, self.choice_delta
                 )
                 self.world = create_world(0)
 
@@ -121,7 +128,7 @@ class Runtime:
         except (sqlite3.DatabaseError, sqlite3.OperationalError, ValueError, OSError):
             return False
         self.character = loaded_character or create_character(
-            "default", float(self.cfg["simulation"].get("temperature", 0.4))
+            "default", self.temperature, self.choice_delta
         )
         self.world = loaded_world or create_world(0)
         self.character.traces = loaded_traces
@@ -167,6 +174,20 @@ class Runtime:
             self.subscribers.remove(fn)
         except ValueError:
             pass
+
+    def _format_message(self, key: str) -> str:
+        g = getattr(self.character, "gender", "female")
+        if g == "male":
+            return {
+                "heard": "он услышал",
+                "ignored": "он проигнорировал",
+                "wrong": "он ответил не то, что ты просил",
+            }.get(key, "")
+        return {
+            "heard": "она услышала",
+            "ignored": "она проигнорировала",
+            "wrong": "она ответила не то, что ты просил",
+        }.get(key, "")
 
     def on_ws_connect(self) -> None:
         self.ws_count += 1
@@ -304,12 +325,15 @@ class Runtime:
                 intervention,
                 self.character.tick,
             )
+            result["message"] = self._format_message(result.get("message_key", ""))
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self._persist)
             await self._broadcast(
                 {
                     "type": "intervention_result",
                     "tick": self.character.tick,
+                    "intervention_type": intervention.type,
+                    "target": target,
                     **result,
                 }
             )
@@ -327,6 +351,18 @@ class Runtime:
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self._persist)
             return {"ok": True}
+
+    async def character_init(self, name: str, gender: str) -> dict:
+        async with self._lock:
+            self.character.name = name.strip()
+            self.character.gender = gender
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, self._persist)
+            return {
+                "ok": True,
+                "name": self.character.name,
+                "gender": self.character.gender,
+            }
 
     async def make_backup_now(self) -> str:
         async with self._lock:

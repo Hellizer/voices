@@ -1,5 +1,8 @@
 export const store = {
   tick: 0,
+  name: "",
+  gender: "female",
+  selfName: "",
   location: "home",
   voices: {},
   traces: [],
@@ -14,6 +17,9 @@ export function setState(snapshot) {
   if (!snapshot) return;
   if (snapshot.character) {
     store.tick = snapshot.character.tick;
+    store.name = snapshot.character.name || "";
+    store.gender = snapshot.character.gender || "female";
+    store.selfName = snapshot.character.self_name || "";
     store.location = snapshot.character.location;
     store.voices = snapshot.character.voices || {};
     store.traces = snapshot.character.traces || [];

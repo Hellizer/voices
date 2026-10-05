@@ -135,7 +135,7 @@ ACTIONS: List[Action] = [
         costs={"energy": 0.02},
         satisfies={"body": 0.1}, raises={"safety": 0.1},
         duration=1, conditions=at_location("home", "nowhere"),
-        traces=["habit", "threshold"], cooldown=1,
+        traces=["habit", "threshold"], cooldown=3,
     ),
 
     # Domestic
@@ -420,7 +420,7 @@ def score(action: Action, state: dict) -> float:
         s -= amount
     traces = state.get("traces")
     if traces is not None and has_habit(traces, action.id):
-        s += habit_strength(traces, action.id) * 0.2
+        s += habit_strength(traces, action.id) * 0.04
     return clamp(s, -1.0, 1.0)
 
 
@@ -443,9 +443,13 @@ def choose_action(state: dict) -> Optional[Tuple[str, str]]:
     if not available:
         return ("idle", "idle")
     scores = {a.id: score(a, state) for a in available}
-    if max(scores.values()) < 0.0:
+    max_score = max(scores.values())
+    if max_score < 0.0:
         return ("idle", "idle")
-    probs = softmax(scores, state.get("temperature", 0.4))
+    delta = state.get("choice_delta", 0.08)
+    cutoff = max_score - delta
+    filtered = {aid: s for aid, s in scores.items() if s >= cutoff}
+    probs = softmax(filtered, state.get("temperature", 0.4))
     r = random.random()
     cum = 0.0
     last_id: Optional[str] = None
@@ -485,11 +489,11 @@ def apply_action(action_id: str, state: dict) -> None:
     for voice_name, coef in action.satisfies.items():
         v = voices.get(voice_name)
         if v is not None:
-            apply_delta(v, -coef * 0.05)
+            apply_delta(v, -coef * 0.02)
     for voice_name, coef in action.raises.items():
         v = voices.get(voice_name)
         if v is not None:
-            apply_delta(v, coef * 0.025)
+            apply_delta(v, coef * 0.01)
 
     cooldowns = state["cooldowns"]
     tick = state["tick"]

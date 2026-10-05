@@ -364,3 +364,123 @@ body {
 #help-close:hover {
   opacity: 1;
 }
+
+#scene .name {
+  font-size: 0.85rem;
+  opacity: 0.6;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.05em;
+}
+
+#scene .name .given {
+  opacity: 0.85;
+}
+
+#scene .name .self {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+#init {
+  position: fixed;
+  inset: 0;
+  background: #f4f1ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+#init[hidden] {
+  display: none;
+}
+
+#init .init-body {
+  background: #f4f1ec;
+  padding: 2rem;
+  max-width: 320px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+}
+
+#init h2 {
+  font-size: 1rem;
+  font-weight: normal;
+  opacity: 0.7;
+  margin-bottom: 0.5rem;
+}
+
+#init label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  text-align: left;
+}
+
+#init input {
+  font: inherit;
+  font-size: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d5cec2;
+  background: #f4f1ec;
+  color: inherit;
+  border-radius: 4px;
+}
+
+#init input:focus {
+  outline: none;
+  border-color: #b8a58c;
+}
+
+#init .init-gender {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+#init .init-gender button {
+  flex: 1;
+  background: none;
+  border: 1px solid #d5cec2;
+  color: inherit;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+#init .init-gender button.active {
+  opacity: 1;
+  border-color: #b8a58c;
+  background: #ebe6dc;
+}
+
+#init #init-ok {
+  background: none;
+  border: 1px solid #b8a58c;
+  color: inherit;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+}
+
+#init #init-ok:hover {
+  background: #ebe6dc;
+}
+
+#init #init-error {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  color: #a05050;
+  min-height: 1.2em;
+}

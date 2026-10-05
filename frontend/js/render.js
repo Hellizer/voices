@@ -72,6 +72,27 @@ const EVENT_KIND_NAMES = {
   presence: "присутствие",
 };
 
+const INTERVENTION_TITLES = {
+  request: "попросить",
+  forbid: "запретить",
+  support: "поддержать",
+  distract: "отвлечь",
+  insist: "настоять",
+  leave: "уйти",
+};
+
+const MESSAGES_M = {
+  heard: "он услышал",
+  ignored: "он проигнорировал",
+  wrong: "он ответил не то, что ты просил",
+};
+
+const MESSAGES_F = {
+  heard: "она услышала",
+  ignored: "она проигнорировала",
+  wrong: "она ответила не то, что ты просила",
+};
+
 const ACTION_PHRASES = {
   idle: "ничего",
   eat: "ест",
@@ -140,13 +161,34 @@ const VOICE_ORDER = [
 let currentFilter = "all";
 let scheduled = false;
 
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
 function renderScene() {
   const el = document.getElementById("scene");
   if (!el) return;
   const actionId = store.lastAction ? store.lastAction.id : null;
   const phrase = actionId ? (ACTION_PHRASES[actionId] || actionId) : "тишина";
   const place = LOCATION_PHRASES[store.location] || store.location || "";
+
+  const name = store.name || "";
+  const selfName = store.selfName || "";
+  let nameHtml = "";
+  if (name && selfName) {
+    nameHtml = `<div class="name"><span class="given">${escapeHtml(name)}</span> <span class="self">${escapeHtml(selfName)}</span></div>`;
+  } else if (name) {
+    nameHtml = `<div class="name"><span class="given">${escapeHtml(name)}</span></div>`;
+  } else if (selfName) {
+    nameHtml = `<div class="name"><span class="self">${escapeHtml(selfName)}</span></div>`;
+  }
+
   el.innerHTML =
+    nameHtml +
     `<div class="time">такт ${store.tick}</div>` +
     `<div class="line">${phrase}</div>` +
     `<div class="place">${place}</div>`;
@@ -205,7 +247,13 @@ function eventText(e) {
     return "";
   }
   if (e.kind === "intervention") {
-    return `${p.type || ""} → ${p.target || ""}`;
+    const title = INTERVENTION_TITLES[p.type] || p.type || "";
+    const base = `${title} → ${p.target || ""}`;
+    const mk = p.message_key;
+    if (!mk) return base;
+    const table = store.gender === "male" ? MESSAGES_M : MESSAGES_F;
+    const msg = table[mk] || "";
+    return msg ? `${base} — ${msg}` : base;
   }
   let text = "";
   try {
