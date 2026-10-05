@@ -187,11 +187,21 @@ function renderScene() {
     nameHtml = `<div class="name"><span class="self">${escapeHtml(selfName)}</span></div>`;
   }
 
+  const tick = store.tick || 0;
+  const day = Math.floor((tick - 1) / 24) + 1;
+  const hour = ((tick - 1) % 24 + 24) % 24;
+  const timeStr = `день ${day} · ${String(hour).padStart(2, "0")}:00`;
+
   el.innerHTML =
     nameHtml +
-    `<div class="time">такт ${store.tick}</div>` +
+    `<div class="time">${timeStr}</div>` +
     `<div class="line">${phrase}</div>` +
     `<div class="place">${place}</div>`;
+
+  const tickEl = document.getElementById("tick-top");
+  if (tickEl) {
+    tickEl.textContent = `такт ${tick}`;
+  }
 }
 
 function renderVoices() {
@@ -201,12 +211,12 @@ function renderVoices() {
   for (const name of VOICE_ORDER) {
     const v = store.voices[name];
     const weight = v ? v.weight : 0;
-    const width = Math.round(weight * 100);
-    const pulse = weight > 0.4 ? " pulse" : "";
+    const height = Math.round(weight * 100);
+    const pulse = weight > 0.35 ? " pulse" : "";
     html +=
       `<div class="voice${pulse}" data-name="${name}">` +
       `<span class="name">${VOICE_NAMES[name] || name}</span>` +
-      `<div class="bar"><i style="width: ${width}%"></i></div>` +
+      `<div class="bar"><i style="width: ${height}%"></i></div>` +
       `</div>`;
   }
   el.innerHTML = html;
@@ -223,7 +233,8 @@ function renderTraces() {
     const isNew = newSet.has(t.id) ? " new" : "";
     html +=
       `<div class="trace${isNew}" data-id="${t.id}" data-type="${t.type}">` +
-      `<span class="type">${TRACE_TYPE_NAMES[t.type] || t.type}</span>${traceLabel(t)}` +
+      `<span class="type">${TRACE_TYPE_NAMES[t.type] || t.type}</span>` +
+      `<span class="text">${traceLabel(t)}</span>` +
       `</div>`;
   }
   el.innerHTML = html;
@@ -274,16 +285,15 @@ function matchesFilter(e) {
 }
 
 function renderJournal() {
-  const el = document.getElementById("journal");
-  if (!el) return;
+  const filtersEl = document.querySelector("#journal .filters");
+  const listEl = document.querySelector("#journal .list");
+  if (!filtersEl || !listEl) return;
 
-  const filtersHtml =
-    `<div class="filters">` +
+  filtersEl.innerHTML =
     `<button data-filter="all" class="${currentFilter === "all" ? "active" : ""}">все</button>` +
     `<button data-filter="actions" class="${currentFilter === "actions" ? "active" : ""}">действия</button>` +
     `<button data-filter="traces" class="${currentFilter === "traces" ? "active" : ""}">следы</button>` +
-    `<button data-filter="crisis" class="${currentFilter === "crisis" ? "active" : ""}">кризисы</button>` +
-    `</div>`;
+    `<button data-filter="crisis" class="${currentFilter === "crisis" ? "active" : ""}">кризисы</button>`;
 
   const filtered = store.journal.filter(matchesFilter);
 
@@ -299,11 +309,11 @@ function renderJournal() {
     const ticks = Array.from(groups.keys()).sort((a, b) => b - a);
     listHtml = "";
     for (const tick of ticks) {
-      listHtml += `<div class="group"><div class="group-tick">такт ${tick}</div>`;
+      listHtml += `<div class="group">`;
       for (const e of groups.get(tick)) {
         listHtml +=
           `<div class="event">` +
-          `<span class="kind">${eventKind(e)}</span>` +
+          `<span class="tick">${tick}</span>` +
           `<span class="text">${eventText(e)}</span>` +
           `</div>`;
       }
@@ -311,9 +321,9 @@ function renderJournal() {
     }
   }
 
-  el.innerHTML = filtersHtml + listHtml;
+  listEl.innerHTML = listHtml;
 
-  el.querySelectorAll(".filters button").forEach((btn) => {
+  filtersEl.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {
       currentFilter = btn.dataset.filter;
       renderJournal();

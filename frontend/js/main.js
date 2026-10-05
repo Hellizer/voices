@@ -4,6 +4,7 @@ import { initIntervene } from './intervene.js';
 import { initEnvironment } from './environment.js';
 import { initJournal } from './journal.js';
 import { initTraces } from './traces.js';
+import { initWaves, updateWavesFromStore } from './waves.js';
 
 function initHelp() {
   const btn = document.getElementById("help-btn");
@@ -90,6 +91,7 @@ async function loadInitial() {
     const res = await fetch('/state');
     const data = await res.json();
     setState(data);
+    updateWavesFromStore();
     render();
     if (!store.name) {
       openInitOverlay();
@@ -131,6 +133,7 @@ function connectWs() {
     }
     if (payload.type === 'tick') {
       applyTickEvent(payload);
+      updateWavesFromStore();
       render();
       return;
     }
@@ -179,5 +182,6 @@ initEnvironment();
 initJournal();
 initTraces();
 initHelp();
+initWaves();
 loadInitial();
 connectWs();
